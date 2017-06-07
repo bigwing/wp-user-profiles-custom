@@ -46,14 +46,17 @@ function wp_user_profiles_social_meta_box() {
 function wp_user_profiles_register_bw_sections() {
 	require_once 'class-profile-social.php';
 	
-	new WP_User_Profile_Social_Section( array(
-		'id'    => 'social',
-		'slug'  => 'social',
-		'name'  => esc_html__( 'Social', 'wp-user-profiles' ),
-		'cap'   => 'edit_profile',
-		'icon'  => 'dashicons-share',
-		'order' => 120
-	) );
+	if ( class_exists( 'WP_User_Profile_Social_Section' ) ) {
+		new WP_User_Profile_Social_Section( array(
+			'id'    => 'social',
+			'slug'  => 'social',
+			'name'  => esc_html__( 'Social', 'wp-user-profiles' ),
+			'cap'   => 'edit_profile',
+			'icon'  => 'dashicons-share',
+			'order' => 120
+		) );
+	}
+	
 }
 add_action( 'init', function() {
 	wp_user_profiles_register_bw_sections();
