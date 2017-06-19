@@ -25,7 +25,7 @@ function wp_user_profiles_social_meta_box() {
 	<table class="form-table">
 		<?php
 		foreach( $profile_social as $slug => $label ) {
-			$profile_value = get_user_meta( get_current_user_id(), $slug, true );
+			$profile_value = get_user_meta( wp_user_profiles_get_user_id(), $slug, true );
 			if ( ! $profile_value || ! is_string( $profile_value ) || empty( $profile_value ) ) {
 				$profile_value = '';
 			}
@@ -78,7 +78,7 @@ add_action( 'add_meta_boxes', function() {
 
 // Job Title Meta Box Output
 function wp_user_profiles_title_meta_box() {
-	$job_title = get_user_meta( get_current_user_id(), 'bw-job-title', true );
+	$job_title = get_user_meta( wp_user_profiles_get_user_id(), 'bw-job-title', true );
 	if ( ! $job_title || ! is_string( $job_title ) || empty( $job_title ) ) {
 		$job_title = '';
 	}
@@ -88,15 +88,15 @@ function wp_user_profiles_title_meta_box() {
 }
 
 // Save Job Title
-add_action( 'wp_user_profiles_save', 'wp_user_profiles_title_meta_box_save' );
-function wp_user_profiles_title_meta_box_save() {
+add_filter( 'wp_user_profiles_save', 'wp_user_profiles_title_meta_box_save' );
+function wp_user_profiles_title_meta_box_save( $user ) {
 	
 	if ( ! is_user_logged_in() || ! current_user_can( 'edit_profile') || ! isset( $_POST['bw-job-title'] ) ) {
 		return;
 	}
-	
+		
 	// Get User
-	$user_id = absint( $_POST['user_id'] );
+	$user_id = absint( $user->ID );
 	
 	// Nonce check
 	check_admin_referer( 'update-user_' . $user_id );
@@ -104,4 +104,25 @@ function wp_user_profiles_title_meta_box_save() {
 	// Save Job Title
 	$job_title = sanitize_text_field( $_POST[ 'bw-job-title' ] );
 	update_user_meta( $user_id, 'bw-job-title', $job_title );
+	
+	return $user;
 }
+
+/**
+* get_user_id
+*
+* Gets a user ID for the user
+* 
+*@return int user_id
+* 
+@return int post_id
+*/
+function wp_user_profiles_get_user_id() {
+	//Get user ID
+	$user_id = isset( $_GET[ 'user_id' ] ) ? absint( $_GET[ 'user_id' ] ) : 0;
+	if ( $user_id == 0 && IS_PROFILE_PAGE ) {
+		$current_user = wp_get_current_user();
+		$user_id = $current_user->ID;
+	}
+	return $user_id;
+} //end get_user_id
